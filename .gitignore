@@ -3,3 +3,6 @@
 public-python-demos
 sdk-segmeneation.ipynb 
 other
+data
+node_modules
+*.pyc

@@ -1,0 +1,6 @@
+fastapi
+uvicorn[standard]
+imfusion-sdk==0.10.0
+numpy
+Pillow
+python-dotenv
