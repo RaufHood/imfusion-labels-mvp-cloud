@@ -8,6 +8,11 @@ export interface ViewerState {
   // Window width / window level
   ww: number;
   wl: number;
+  // Annotation tool state
+  annotationMode: boolean;
+  brushSize: number;
+  isErasing: boolean;
+  annotationVersion: number;
   // Actions
   setShape: (shape: [number, number, number]) => void;
   setPos: (pos: [number, number, number]) => void;
@@ -16,6 +21,11 @@ export interface ViewerState {
   setZ: (z: number) => void;
   setY: (y: number) => void;
   setX: (x: number) => void;
+  // Annotation actions
+  setAnnotationMode: (v: boolean) => void;
+  setBrushSize: (v: number) => void;
+  setIsErasing: (v: boolean) => void;
+  bumpAnnotationVersion: () => void;
 }
 
 export const useViewerStore = create<ViewerState>((set) => ({
@@ -23,6 +33,10 @@ export const useViewerStore = create<ViewerState>((set) => ({
   pos: [0, 0, 0],
   ww: 400,
   wl: 40,
+  annotationMode: false,
+  brushSize: 16,
+  isErasing: false,
+  annotationVersion: 0,
 
   setShape: (shape) =>
     set((s) => ({
@@ -55,4 +69,10 @@ export const useViewerStore = create<ViewerState>((set) => ({
     set((s) => ({
       pos: [s.pos[0], s.pos[1], Math.max(0, Math.min(x, s.shape[2] - 1))],
     })),
+
+  setAnnotationMode: (v) => set({ annotationMode: v }),
+  setBrushSize: (v) => set({ brushSize: v }),
+  setIsErasing: (v) => set({ isErasing: v }),
+  bumpAnnotationVersion: () =>
+    set((s) => ({ annotationVersion: s.annotationVersion + 1 })),
 }));

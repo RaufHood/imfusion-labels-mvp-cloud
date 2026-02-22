@@ -19,6 +19,8 @@ export function VolumePanel() {
         position: "relative",
         background: "#000",
         overflow: "hidden",
+        minHeight: 0,
+        minWidth: 0,
         display: "flex",
         alignItems: "center",
         justifyContent: "center",

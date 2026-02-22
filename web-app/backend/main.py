@@ -9,6 +9,7 @@ from fastapi.responses import Response
 from fastapi.middleware.cors import CORSMiddleware
 from dotenv import load_dotenv
 from imaging import manager
+from annotation import annotation_manager
 
 load_dotenv()
 
@@ -52,6 +53,7 @@ def startup():
     info = manager.info()
     print(f"Loaded volume: shape={info['shape']}, spacing={info['spacing']}")
     print(f"  Default WW/WL: {info['ww']:.1f} / {info['wl']:.1f}")
+    annotation_manager.init(tuple(info["shape"]))
 
 
 @app.get("/api/info")
@@ -93,7 +95,9 @@ async def upload_dicom(file: UploadFile = File(...)):
     except Exception as exc:
         raise HTTPException(status_code=422, detail=f"Failed to load DICOM data: {exc}")
 
-    return manager.info()
+    info = manager.info()
+    annotation_manager.init(tuple(info["shape"]))
+    return info
 
 
 @app.get("/api/slice/{plane}/{index}")
@@ -126,3 +130,66 @@ def get_mip(
 
     png = manager.mip_png(ww, wl)
     return Response(content=png, media_type="image/png")
+
+
+# ─── Annotation routes ───────────────────────────────────────────────────────
+# NOTE: /export must be registered BEFORE /{plane}/{index} to avoid FastAPI
+# treating "export" as the plane path parameter.
+
+@app.get("/api/annotation/export")
+def export_annotation():
+    if annotation_manager.mask is None:
+        raise HTTPException(status_code=503, detail="No volume loaded.")
+    if manager.sis is None:
+        raise HTTPException(status_code=503, detail="No volume loaded.")
+    try:
+        dcm_bytes = annotation_manager.export_dicom_seg(manager.sis)
+    except Exception as exc:
+        raise HTTPException(status_code=500, detail=f"Export failed: {exc}")
+    return Response(
+        content=dcm_bytes,
+        media_type="application/octet-stream",
+        headers={"Content-Disposition": "attachment; filename=annotation.dcm"},
+    )
+
+
+@app.post("/api/annotation/{plane}/{index}")
+async def post_annotation(
+    plane: str,
+    index: int,
+    file: UploadFile = File(...),
+    erase: bool = Query(False),  # accepted but ignored; frontend sends full state
+):
+    if plane not in VALID_PLANES:
+        raise HTTPException(status_code=400, detail=f"Invalid plane: {plane!r}.")
+    if annotation_manager.mask is None:
+        raise HTTPException(status_code=503, detail="No volume loaded.")
+    png_bytes = await file.read()
+    annotation_manager.apply_slice_png(plane, index, png_bytes)
+    return {"ok": True}
+
+
+@app.get("/api/annotation/{plane}/{index}")
+def get_annotation(plane: str, index: int, v: int = Query(0)):
+    if plane not in VALID_PLANES:
+        raise HTTPException(status_code=400, detail=f"Invalid plane: {plane!r}.")
+    if annotation_manager.mask is None:
+        raise HTTPException(status_code=503, detail="No volume loaded.")
+    png = annotation_manager.get_overlay_png(plane, index)
+    return Response(content=png, media_type="image/png")
+
+
+@app.delete("/api/annotation")
+def delete_annotation():
+    annotation_manager.clear()
+    return {"ok": True}
+
+
+@app.get("/api/voxel/{z}/{y}/{x}")
+def get_voxel(z: int, y: int, x: int):
+    if manager.arr is None:
+        raise HTTPException(status_code=503, detail="No volume loaded.")
+    z = max(0, min(z, manager.arr.shape[0] - 1))
+    y = max(0, min(y, manager.arr.shape[1] - 1))
+    x = max(0, min(x, manager.arr.shape[2] - 1))
+    return {"hu": float(manager.arr[z, y, x])}

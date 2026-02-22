@@ -40,3 +40,50 @@ export async function uploadDicom(file: File, signal?: AbortSignal): Promise<Vol
   }
   return res.json();
 }
+
+// ─── Annotation API ──────────────────────────────────────────────────────────
+
+export function annotationOverlayUrl(
+  plane: string,
+  index: number,
+  version: number
+): string {
+  return `/api/annotation/${plane}/${index}?v=${version}`;
+}
+
+export async function postAnnotationStroke(
+  plane: string,
+  index: number,
+  blob: Blob
+): Promise<void> {
+  const form = new FormData();
+  form.append("file", blob, "stroke.png");
+  const res = await fetch(`/api/annotation/${plane}/${index}`, {
+    method: "POST",
+    body: form,
+  });
+  if (!res.ok) throw new Error(`POST annotation failed: ${res.status}`);
+}
+
+export async function exportDicomSeg(): Promise<Blob> {
+  const res = await fetch("/api/annotation/export");
+  if (!res.ok) throw new Error(`Export failed: ${res.status}`);
+  return res.blob();
+}
+
+export async function clearAnnotations(): Promise<void> {
+  const res = await fetch("/api/annotation", { method: "DELETE" });
+  if (!res.ok) throw new Error(`Clear failed: ${res.status}`);
+}
+
+export async function getVoxelHU(
+  z: number,
+  y: number,
+  x: number,
+  signal?: AbortSignal
+): Promise<number> {
+  const res = await fetch(`/api/voxel/${z}/${y}/${x}`, { signal });
+  if (!res.ok) throw new Error(`GET voxel failed: ${res.status}`);
+  const data = await res.json();
+  return data.hu;
+}
