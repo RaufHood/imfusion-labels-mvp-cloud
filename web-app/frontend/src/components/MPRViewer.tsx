@@ -1,11 +1,21 @@
+import { useState } from "react";
 import { SlicePanel } from "./SlicePanel";
 import { VolumePanel } from "./VolumePanel";
+import { UploadZone } from "./UploadZone";
 import { useViewerStore } from "../store";
+import { VolumeInfo } from "../api";
 
 export function MPRViewer() {
   const ww = useViewerStore((s) => s.ww);
   const wl = useViewerStore((s) => s.wl);
   const setWL = useViewerStore((s) => s.setWL);
+  const setShape = useViewerStore((s) => s.setShape);
+  const [uploadOpen, setUploadOpen] = useState(false);
+
+  function handleUploadSuccess(info: VolumeInfo) {
+    setShape(info.shape);
+    setWL(info.ww, info.wl);
+  }
 
   return (
     <div style={{ display: "flex", flexDirection: "column", height: "100vh" }}>
@@ -55,10 +65,34 @@ export function MPRViewer() {
           <span style={{ color: "#fff", minWidth: 40 }}>{Math.round(wl)}</span>
         </label>
 
-        <span style={{ marginLeft: "auto", color: "#555" }}>
-          Scroll to navigate slices · Click to move crosshairs
+        <button
+          onClick={() => setUploadOpen(true)}
+          style={{
+            marginLeft: "auto",
+            background: "#2a2a2a",
+            border: "1px solid #444",
+            borderRadius: 4,
+            color: "#ccc",
+            fontSize: 12,
+            padding: "4px 12px",
+            cursor: "pointer",
+          }}
+          onMouseEnter={(e) => (e.currentTarget.style.borderColor = "#4af")}
+          onMouseLeave={(e) => (e.currentTarget.style.borderColor = "#444")}
+        >
+          Upload DICOM
+        </button>
+
+        <span style={{ color: "#555", fontSize: 11 }}>
+          Scroll to navigate · Click to move crosshairs
         </span>
       </div>
+
+      <UploadZone
+        open={uploadOpen}
+        onClose={() => setUploadOpen(false)}
+        onSuccess={handleUploadSuccess}
+      />
 
       {/* 2×2 grid */}
       <div

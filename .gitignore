@@ -6,3 +6,14 @@ other
 data
 node_modules
 *.pyc
+
+2. DICOM upload
+
+  Effort: Low-Medium. Payoff: High.
+
+  Without this you can only demo your own hardcoded data. Any 
+  audience will immediately want to drag their own scan in. On
+   the backend it's a POST /api/upload that saves the file and
+   re-runs manager.load(). On the frontend it's a
+  drag-and-drop zone. ~100 lines total. This is table stakes  
+  for a demo — you need it before Docker.

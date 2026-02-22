@@ -23,3 +23,20 @@ export function sliceUrl(
 export function mipUrl(ww: number, wl: number): string {
   return `/api/mip?ww=${ww.toFixed(1)}&wl=${wl.toFixed(1)}`;
 }
+
+export async function uploadDicom(file: File, signal?: AbortSignal): Promise<VolumeInfo> {
+  const form = new FormData();
+  form.append("file", file);
+  const res = await fetch("/api/upload", { method: "POST", body: form, signal });
+  if (!res.ok) {
+    let detail = res.statusText;
+    try {
+      const body = await res.json();
+      detail = body.detail ?? detail;
+    } catch {
+      // keep statusText
+    }
+    throw new Error(detail);
+  }
+  return res.json();
+}
