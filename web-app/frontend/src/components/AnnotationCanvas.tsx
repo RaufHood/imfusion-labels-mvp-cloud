@@ -192,7 +192,7 @@ export function AnnotationCanvas({
     flushStroke();
   }
 
-  function handleMouseLeave(e: React.MouseEvent<HTMLCanvasElement>) {
+  function handleMouseLeave(_e: React.MouseEvent<HTMLCanvasElement>) {
     if (!annotationMode || !isDrawingRef.current) return;
     isDrawingRef.current = false;
     lastPosRef.current = null;

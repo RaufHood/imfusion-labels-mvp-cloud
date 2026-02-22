@@ -193,3 +193,15 @@ def get_voxel(z: int, y: int, x: int):
     y = max(0, min(y, manager.arr.shape[1] - 1))
     x = max(0, min(x, manager.arr.shape[2] - 1))
     return {"hu": float(manager.arr[z, y, x])}
+
+
+@app.get("/api/health")
+def health():
+    return {"status": "ok"}
+
+
+# Serve React SPA — only if the static dir was built into the image
+from fastapi.staticfiles import StaticFiles
+
+if os.path.isdir("static"):
+    app.mount("/", StaticFiles(directory="static", html=True), name="static")

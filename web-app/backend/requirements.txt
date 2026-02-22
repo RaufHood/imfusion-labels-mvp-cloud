@@ -1,5 +1,6 @@
 fastapi
 uvicorn[standard]
+python-multipart
 imfusion-sdk==0.10.0
 numpy
 Pillow
