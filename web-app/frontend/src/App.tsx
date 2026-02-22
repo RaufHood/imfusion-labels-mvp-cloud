@@ -2,8 +2,10 @@ import { useEffect, useState } from "react";
 import { fetchInfo } from "./api";
 import { useViewerStore } from "./store";
 import { MPRViewer } from "./components/MPRViewer";
+import { UploadZone } from "./components/UploadZone";
 
-type LoadState = "loading" | "ready" | "error";
+// "upload-first" = backend is up but has no data loaded
+type LoadState = "loading" | "upload-first" | "ready" | "error";
 
 export default function App() {
   const [loadState, setLoadState] = useState<LoadState>("loading");
@@ -19,9 +21,14 @@ export default function App() {
         setWL(info.ww, info.wl);
         setLoadState("ready");
       })
-      .catch((err) => {
-        setErrorMsg(String(err));
-        setLoadState("error");
+      .catch((err: unknown) => {
+        // 503 means backend is up but no volume loaded yet → show upload screen
+        if (String(err).includes("503") || String(err).includes("No volume")) {
+          setLoadState("upload-first");
+        } else {
+          setErrorMsg(String(err));
+          setLoadState("error");
+        }
       });
   }, [setShape, setWL]);
 
@@ -51,6 +58,22 @@ export default function App() {
         />
         <span>Loading volume…</span>
         <style>{`@keyframes spin { to { transform: rotate(360deg); } }`}</style>
+      </div>
+    );
+  }
+
+  if (loadState === "upload-first") {
+    return (
+      <div style={{ height: "100vh", background: "#111" }}>
+        <UploadZone
+          open={true}
+          onClose={() => {}} // can't close without uploading in this state
+          onSuccess={(info) => {
+            setShape(info.shape);
+            setWL(info.ww, info.wl);
+            setLoadState("ready");
+          }}
+        />
       </div>
     );
   }
