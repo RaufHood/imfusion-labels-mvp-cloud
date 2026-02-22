@@ -13,7 +13,7 @@ WORKDIR /app
 
 # Runtime libs for imfusion-sdk: OpenMP, OpenGL/EGL, GLib
 RUN apt-get update && apt-get install -y \
-    libgomp1 libgl1 libegl1 libglib2.0-0 libgpg-error0 \
+    libgomp1 libgl1 libegl1 libglib2.0-0 libgpg-error0 libp11-kit0 \
     && rm -rf /var/lib/apt/lists/*
 
 COPY web-app/backend/requirements.txt .
