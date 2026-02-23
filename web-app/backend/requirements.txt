@@ -1,7 +1,7 @@
 fastapi
 uvicorn[standard]
 python-multipart
-imfusion-sdk==0.10.0
+https://downloads.imfusion.com/Webshop/imfusion_sdk-0.10.0+webshop.free-cp311-cp311-manylinux_2_28_x86_64.whl
 numpy
 Pillow
 python-dotenv
