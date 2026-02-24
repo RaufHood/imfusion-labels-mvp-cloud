@@ -72,8 +72,10 @@ export function AnnotationCanvas({
 
       const canvas = canvasRef.current;
       if (canvas) {
-        canvas.width = Math.round(r.width);
-        canvas.height = Math.round(r.height);
+        const newW = Math.round(r.width);
+        const newH = Math.round(r.height);
+        if (canvas.width !== newW) canvas.width = newW;
+        if (canvas.height !== newH) canvas.height = newH;
       }
     }
 
@@ -102,7 +104,7 @@ export function AnnotationCanvas({
       ctx.clearRect(0, 0, canvas.width, canvas.height);
     };
     img.src = url;
-  }, [sliceIndex, plane, annotationVersion, localVersion]);
+  }, [sliceIndex, plane, annotationVersion, localVersion, rect.width, rect.height]);
 
   function getCanvasPos(e: React.MouseEvent<HTMLCanvasElement>) {
     const canvas = canvasRef.current;

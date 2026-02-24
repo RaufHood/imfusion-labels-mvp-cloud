@@ -1,4 +1,9 @@
 import imfusion as imf
+if not hasattr(imf, 'load'):
+    raise RuntimeError(
+        "imfusion did not initialize fully — imf.load() is missing. "
+        "Check that IMFUSION_LICENSE_KEY is set and the key is not depleted."
+    )
 import numpy as np
 from PIL import Image
 import io
