@@ -1,0 +1,15 @@
+services:
+  - type: web
+    name: imfusion-app
+    runtime: docker
+    dockerfilePath: ./Dockerfile
+    plan: starter
+    envVars:
+      - key: IMFUSION_LICENSE_KEY
+        sync: false          # set manually in Render dashboard — never commit the key
+      - key: DICOM_PATH
+        value: /data/DICOMDIR
+    disk:
+      name: dicom-data
+      mountPath: /data
+      sizeGB: 10
